@@ -20,6 +20,8 @@ SVM """
 
 		self.arg = arg
 
+	def calculate_error(self,index):
+
 
 	def fit(self ,X, y, sample_weight=None):
 		""" Fit the model according to the given training data
@@ -36,10 +38,23 @@ SVM """
 		self :object
 		"""
 
-		#初始化参数a,b
+		#初始化参数a,b ,pandas用于统计分析(类似于表格),numpy常用于数值计算，此处我们假设X为numpy矩阵
 		length = X.shape[1]
-		a = np.zeros(length)
-		
+		a = [0 for i in range(length)]
+		#a = np.zeros(length)
+		b = 0
+		passes = 0
+		Error = [0 for i in range(length)]
+		while passes < max_passes:
+			num_changed_alphas = 0
+			# row 是 X　二维矩阵中的每一行
+			for index in range(length):
+				Error[index] = self.calculate_error(index)
+
+
+
+
+
 
 
 		
