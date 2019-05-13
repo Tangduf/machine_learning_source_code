@@ -10,20 +10,35 @@
 
 
 # 为svm模型建立一个类
-
+import random
 
 class SVM (object):
 	"""SVM中常见参数Ｃ，gramma,核函数类型，tol,最大迭代次数max_iter
 
 SVM """
-	def __init__(self, C,gramma,tol,max_iter):
+	def __init__(self, C,gramma,tol,max_iter,kernel):
 
-		self.arg = arg
+		self.C = C
+		self.gramma = gramma
+		self.tol = tol
+		self.max_iter = max_iter
+		self.kernel = kernel
 
-	def calculate_error(self,index):
+	def calculate_error(self,dataMatrix,labelMatrix,i,b):
+		for j in range(m):
+			#Error[i] += a[i]*y[i]*np.dot(X[i],X[i])
+			fx += dataMatrix[j]*labelMatrix[j]*self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[i])
+		fx += b
+		E = fx - labelMatrix[i]
+		return E
 
+	def predict(self):
+		return 0
 
-	def fit(self ,X, y, sample_weight=None):
+	def svm_kernel(self,kernel,x,z):
+		return 0
+
+	def fit(self ,data , classLabel, sample_weight=None):
 		""" Fit the model according to the given training data
 		Parameters
 		----------
@@ -37,19 +52,74 @@ SVM """
 		----------
 		self :object
 		"""
-
-		#初始化参数a,b ,pandas用于统计分析(类似于表格),numpy常用于数值计算，此处我们假设X为numpy矩阵
-		length = X.shape[1]
-		a = [0 for i in range(length)]
-		#a = np.zeros(length)
+		#pandas用于统计分析(类似于表格),将数据转化为np矩阵，方便后续的处理
+		dataMatrix = np.mat(data)
+		labelMatrix = np.mat(classLabel)．T
+		#获得样本的数目,初始化参数alphas,b参数
+		m,n = np.shape(dataMatrix)
 		b = 0
+		alphas = [0 for i in range(m)]
+		#初始化参数alphas,b
+		#a = [0 for i in range(m)]
+		#a = np.zeros(m)
 		passes = 0
-		Error = [0 for i in range(length)]
+		#初始化E
+		E = [0 for i in range(m)]
+
 		while passes < max_passes:
 			num_changed_alphas = 0
 			# row 是 X　二维矩阵中的每一行
-			for index in range(length):
-				Error[index] = self.calculate_error(index)
+			for i in range(m):
+				#计算Ei
+				E[i] = self.calculate_error(dataMatrix,labelMatrix,i,self.b)
+				#找到不满足ktt条件的样本
+				if (labelMatrix[i]*E[i] < -self.tol and alphas[i] < self.C) or \
+				 (labelMatrix[i]*E[i] > self.tol and alphas[i] > 0)
+					#选择一个不等于i的随机数
+					j = i
+					while j == i:
+						j = random.randint(0, m-1)
+					E[j] = self.calculate_error(dataMatrix,labelMatrix,j,self.b)
+					alphaIold = alphas[i].copy()
+					alphaJold = alphas[j].copy()
+					if labelMatrix[i] == labelMatrix[j]:
+						L = max(0,alphas[i]+alphas[j]-self.C)
+						H = min(self.C,alphas[i]+alphas[j])
+					else:
+						L = max(0,alphas[j]-alphas[i])
+						H = min(self.C,self.C+alphas[j]-alphas[i])
+					if L == H:
+						print("L == H")
+						continue
+					eta = 2*self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[i])- \
+					self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[j])- \
+					self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[i])
+					if eta >= 0:
+						continue
+					alphas[j] = alphas[j] - labelMatrix[j]*(E[i]-E[j])/eta
+					if alphas[j] > H:
+						alphas[j] = H
+					elif alphas[j] < L:
+						alphas[j] = L
+					if abs(alphaJold-alphas[j])<0.00001:
+						continue
+					alphas[i] = alphas[i] + labelMatrix[i]*labelMatrix[j](alphaJold-alphas[j])
+					b1 = b - E[i] - labelMatrix[i]*(alphas[i] - alphaIold)*self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[i]) \
+					labelMatrix[j]*(alphas[j] - alphaJold)*self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[j])
+					b2 = b - E[j] - labelMatrix[i]*(alphas[i] - alphaIold)*self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[j]) \
+					labelMatrix[j]*(alphas[j] - alphaJold)*self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[j])
+					if alphas[i] > 0 and alphas[i] < self.C：
+						b = b1
+					elif alphas[j] > 0 and alphas[j] < self.C：
+						b = b2
+					else:
+						b = (b1 + b2)/2
+					num_changed_alphas += 1
+			if (num_changed_alphas == 0): 
+				passes += 1
+			else: 
+				passes = 0
+			return alphas,b
 
 
 
