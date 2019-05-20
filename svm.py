@@ -24,10 +24,10 @@ SVM """
 		self.max_iter = max_iter
 		self.kernel = kernel
 
-	def calculate_error(self,dataMatrix,labelMatrix,i,b):
-		for j in range(m):
+	def calculate_error(self,dataMatrix,labelMatrix,i,b,m,alphas):
+		for k in range(m):
 			#Error[i] += a[i]*y[i]*np.dot(X[i],X[i])
-			fx += dataMatrix[j]*labelMatrix[j]*self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[i])
+			fx += alphas[k]*labelMatrix[k]*self.svm_kernel(self.kernel,dataMatrix[k],dataMatrix[i])
 		fx += b
 		E = fx - labelMatrix[i]
 		return E
@@ -71,7 +71,7 @@ SVM """
 			# row 是 X　二维矩阵中的每一行
 			for i in range(m):
 				#计算Ei
-				E[i] = self.calculate_error(dataMatrix,labelMatrix,i,self.b)
+				E[i] = self.calculate_error(dataMatrix,labelMatrix,i,self.b,m,alphas)
 				#找到不满足ktt条件的样本
 				if (labelMatrix[i]*E[i] < -self.tol and alphas[i] < self.C) or \
 				 (labelMatrix[i]*E[i] > self.tol and alphas[i] > 0)
@@ -79,7 +79,7 @@ SVM """
 					j = i
 					while j == i:
 						j = random.randint(0, m-1)
-					E[j] = self.calculate_error(dataMatrix,labelMatrix,j,self.b)
+					E[j] = self.calculate_error(dataMatrix,labelMatrix,j,self.b,m,alphas)
 					alphaIold = alphas[i].copy()
 					alphaJold = alphas[j].copy()
 					if labelMatrix[i] == labelMatrix[j]:
@@ -91,9 +91,9 @@ SVM """
 					if L == H:
 						print("L == H")
 						continue
-					eta = 2*self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[i])- \
-					self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[j])- \
-					self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[i])
+					eta = 2*self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[j])- \
+					self.svm_kernel(self.kernel,dataMatrix[i],dataMatrix[i])- \
+					self.svm_kernel(self.kernel,dataMatrix[j],dataMatrix[j])
 					if eta >= 0:
 						continue
 					alphas[j] = alphas[j] - labelMatrix[j]*(E[i]-E[j])/eta
@@ -119,7 +119,11 @@ SVM """
 				passes += 1
 			else: 
 				passes = 0
-			return alphas,b
+		#计算W参数,W为向量
+		w = 0
+		for i in range (m):
+			w += alphas[i]*dataMatrix[i]*labelMatrix[i]
+		return w,alphas,b
 
 
 
